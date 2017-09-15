@@ -1,0 +1,42 @@
+import discord
+import discord.ext.commands as commands
+from discord.ext.commands import view, context, bot
+
+
+class DyscordPlugin:
+    def __init__(self, b: bot.Bot):
+        self.bot = b
+
+    async def process_msg(self, msg: discord.Message):
+        sview = view.StringView(msg.content)
+
+        prefix = await self.bot.get_prefix(msg)
+        invoked_prefix = prefix
+
+        if not isinstance(prefix, (tuple, list)):
+            if not sview.skip_string(prefix):
+                return
+        else:
+            invoked_prefix = discord.utils.find(sview.skip_string, prefix)
+            if invoked_prefix is None:
+                return
+
+        invoker = sview.get_word()
+        tmp = {
+            'bot': self.bot,
+            'invoked_with': invoker,
+            'message': msg,
+            'view': sview,
+            'prefix': invoked_prefix
+        }
+        ctx = context.Context(**tmp)
+        del tmp
+
+        if invoker in dir(self):
+            command = getattr(self, invoker)
+            try:
+                await command.invoke(ctx)
+            except commands.CommandError as e:
+                ctx.command.dispatch_error(e, ctx)
+        elif invoker:  # Command not found
+            pass
