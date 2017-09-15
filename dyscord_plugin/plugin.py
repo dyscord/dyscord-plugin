@@ -32,11 +32,14 @@ class DyscordPlugin:
         ctx = context.Context(**tmp)
         del tmp
 
-        if invoker in dir(self):
+        try:
             command = getattr(self, invoker)
+            if not isinstance(command, commands.Command):
+                raise AttributeError
+        except AttributeError:  # Command not found
+            return
+        else:
             try:
                 await command.invoke(ctx)
             except commands.CommandError as e:
                 ctx.command.dispatch_error(e, ctx)
-        elif invoker:  # Command not found
-            pass
