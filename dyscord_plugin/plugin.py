@@ -2,12 +2,15 @@ import discord
 import discord.ext.commands as commands
 from discord.ext.commands import view, context, bot
 
+from .storage import StorageManager
+from .message import DyscordContext
+
 
 class DyscordPlugin:
     def __init__(self, b: bot.Bot):
         self.bot = b
 
-    async def process_msg(self, msg: discord.Message):
+    async def process_msg(self, msg: discord.Message, storagem: StorageManager):
         sview = view.StringView(msg.content)
 
         prefix = await self.bot.get_prefix(msg)
@@ -29,7 +32,7 @@ class DyscordPlugin:
             'view': sview,
             'prefix': invoked_prefix
         }
-        ctx = context.Context(**tmp)
+        ctx = DyscordContext(storagem, **tmp)
         del tmp
 
         try:
