@@ -45,4 +45,4 @@ class DyscordPlugin:
             try:
                 await command.invoke(ctx)
             except commands.CommandError as e:
-                ctx.command.dispatch_error(e, ctx)
+                await ctx.command.dispatch_error(ctx, e)
